@@ -221,6 +221,12 @@ public final class AuthorizationException extends Exception {
          */
         public static final AuthorizationException ID_TOKEN_VALIDATION_ERROR =
                 generalEx(9, "Invalid ID Token");
+
+        /**
+         * Indicates that something unexpected went wrong
+         */
+        public static final AuthorizationException UNEXPECTED_ERROR =
+                generalEx(10, "Unexpected error");
     }
 
     /**

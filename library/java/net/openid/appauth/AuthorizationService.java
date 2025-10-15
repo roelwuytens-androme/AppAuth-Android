@@ -1086,6 +1086,10 @@ public class AuthorizationService {
                 Logger.debugWithStack(ex, "Failed to complete device authorization request");
                 mException = AuthorizationException.fromTemplate(
                     GeneralErrors.JSON_DESERIALIZATION_ERROR, ex);
+            } catch (Exception ex) {
+                Logger.debugWithStack(ex, "Failed to complete device authorization request");
+                mException = AuthorizationException.fromTemplate(
+                    GeneralErrors.UNEXPECTED_ERROR, ex);
             } finally {
                 Utils.closeQuietly(is);
             }
