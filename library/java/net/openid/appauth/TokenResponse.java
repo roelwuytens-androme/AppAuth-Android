@@ -233,6 +233,7 @@ public class TokenResponse {
         @NonNull
         public Builder setRequest(@NonNull TokenRequest request) {
             mRequest = checkNotNull(request, "request cannot be null");
+            mRequest.removeSensitiveData();
             return this;
         }
 

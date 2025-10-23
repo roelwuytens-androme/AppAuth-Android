@@ -226,7 +226,7 @@ public class TokenRequest {
      * Additional parameters to be passed as part of the request.
      */
     @NonNull
-    public final Map<String, String> additionalParameters;
+    public Map<String, String> additionalParameters;
 
     /**
      * Creates instances of {@link TokenRequest}.
@@ -552,6 +552,11 @@ public class TokenRequest {
     @Nullable
     public Set<String> getScopeSet() {
         return AsciiStringListUtil.stringToSet(scope);
+    }
+
+    public void removeSensitiveData() {
+        // Remove potential username/password credentials
+        this.additionalParameters = Collections.emptyMap();
     }
 
     /**
