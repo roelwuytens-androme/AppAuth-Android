@@ -442,6 +442,10 @@ public class AuthorizationServiceConfiguration {
                 mException = AuthorizationException.fromTemplate(
                         GeneralErrors.INVALID_DISCOVERY_DOCUMENT,
                         ex);
+            } catch (Exception ex) {
+                Logger.debugWithStack(ex, "Failed to complete discovery request");
+                mException = AuthorizationException.fromTemplate(
+                    GeneralErrors.UNEXPECTED_ERROR, ex);
             } finally {
                 Utils.closeQuietly(is);
             }

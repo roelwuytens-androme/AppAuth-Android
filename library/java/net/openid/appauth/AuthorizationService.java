@@ -708,6 +708,9 @@ public class AuthorizationService {
                         mException = AuthorizationException.fromTemplate(
                             GeneralErrors.JSON_DESERIALIZATION_ERROR,
                             jsonEx);
+                    } catch (Exception genericException) {
+                        mException = AuthorizationException.fromTemplate(
+                            GeneralErrors.UNEXPECTED_ERROR, genericException);
                     }
                 }
                 return json;
@@ -808,6 +811,10 @@ public class AuthorizationService {
                 Logger.debugWithStack(ex, "Failed to complete exchange request");
                 mException = AuthorizationException.fromTemplate(
                         GeneralErrors.JSON_DESERIALIZATION_ERROR, ex);
+            } catch (Exception ex) {
+                Logger.debugWithStack(ex, "Failed to complete exchange request");
+                mException = AuthorizationException.fromTemplate(
+                    GeneralErrors.UNEXPECTED_ERROR, ex);
             } finally {
                 Utils.closeQuietly(is);
             }
@@ -957,6 +964,10 @@ public class AuthorizationService {
                 Logger.debugWithStack(ex, "Failed to complete registration request");
                 mException = AuthorizationException.fromTemplate(
                         GeneralErrors.JSON_DESERIALIZATION_ERROR, ex);
+            } catch (Exception ex) {
+                Logger.debugWithStack(ex, "Failed to complete registration request");
+                mException = AuthorizationException.fromTemplate(
+                    GeneralErrors.UNEXPECTED_ERROR, ex);
             } finally {
                 Utils.closeQuietly(is);
             }

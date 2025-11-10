@@ -199,7 +199,7 @@ public final class Configuration {
         } catch (JSONException ex) {
             throw new InvalidConfigurationException(
                     "Unable to parse configuration: " + ex.getMessage());
-        }
+        } 
 
         mConfigHash = configData.sha256().base64();
         mClientId = getConfigString("client_id");
