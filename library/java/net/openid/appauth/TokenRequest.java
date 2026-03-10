@@ -71,6 +71,8 @@ public class TokenRequest {
 
     public static final String PARAM_CLIENT_ID = "client_id";
 
+    public static final String PARAM_CLIENT_SECRET = "client_secret";
+
     @VisibleForTesting
     static final String PARAM_CODE = "code";
 
