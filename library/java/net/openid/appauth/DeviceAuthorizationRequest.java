@@ -14,7 +14,6 @@
 
 package net.openid.appauth;
 
-import static net.openid.appauth.AdditionalParamsProcessor.builtInParams;
 import static net.openid.appauth.AdditionalParamsProcessor.checkAdditionalParams;
 import static net.openid.appauth.Preconditions.checkNotEmpty;
 import static net.openid.appauth.Preconditions.checkNotNull;
@@ -25,6 +24,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import net.openid.appauth.internal.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -50,10 +50,6 @@ public class DeviceAuthorizationRequest {
 
     @VisibleForTesting
     static final String PARAM_SCOPE = "scope";
-
-    private static final Set<String> BUILT_IN_PARAMS = builtInParams(
-            PARAM_CLIENT_ID,
-            PARAM_SCOPE);
 
     private static final String KEY_CONFIGURATION = "configuration";
     private static final String KEY_CLIENT_ID = "clientId";
@@ -213,12 +209,17 @@ public class DeviceAuthorizationRequest {
          * Specifies additional parameters. Replaces any previously provided set of parameters.
          * Parameter keys and values cannot be null or empty.
          *
+         * <p>Built-in parameters are permitted here so that they can be supplied through a
+         * backend-driven configuration map. When a built-in parameter is also set directly on the
+         * builder, the builder value takes precedence and the additional parameter is dropped when
+         * the request parameters are produced; see {@link #getRequestParameters()}.
+         *
          * @see "The OAuth 2.0 Authorization Framework (RFC 6749), Section 3.1
          * <https://tools.ietf.org/html/rfc6749#section-3.1>"
          */
         @NonNull
         public Builder setAdditionalParameters(@Nullable Map<String, String> additionalParameters) {
-            mAdditionalParameters = checkAdditionalParams(additionalParameters, BUILT_IN_PARAMS);
+            mAdditionalParameters = checkAdditionalParams(additionalParameters);
             return this;
         }
 
@@ -274,7 +275,14 @@ public class DeviceAuthorizationRequest {
         params.put(PARAM_CLIENT_ID, clientId);
         putIfNotNull(params, PARAM_SCOPE, scope);
 
+        // A built-in parameter supplied via additionalParameters must not overwrite the value set
+        // on the builder; the builder value takes precedence.
         for (Entry<String, String> param : additionalParameters.entrySet()) {
+            if (params.containsKey(param.getKey())) {
+                Logger.warn("Ignoring additional parameter %s; it is already set on the request "
+                        + "and the builder value takes precedence", param.getKey());
+                continue;
+            }
             params.put(param.getKey(), param.getValue());
         }
 

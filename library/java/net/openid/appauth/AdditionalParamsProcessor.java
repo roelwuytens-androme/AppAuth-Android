@@ -45,6 +45,17 @@ class AdditionalParamsProcessor {
         return Collections.unmodifiableSet(new HashSet<>(Arrays.asList(params)));
     }
 
+    /**
+     * Validates additional parameters without rejecting built-in keys. Only enforces that keys and
+     * values are non-null; built-in keys are permitted so that callers can supply spec-defined
+     * parameters (e.g. {@code response_mode}) through a backend-driven configuration map. Callers
+     * are responsible for ensuring built-in keys do not collide with values set directly on the
+     * request builder.
+     */
+    static Map<String, String> checkAdditionalParams(@Nullable Map<String, String> params) {
+        return checkAdditionalParams(params, Collections.<String>emptySet());
+    }
+
     static Map<String, String> checkAdditionalParams(
             @Nullable Map<String, String> params,
             @NonNull Set<String> builtInParams) {
