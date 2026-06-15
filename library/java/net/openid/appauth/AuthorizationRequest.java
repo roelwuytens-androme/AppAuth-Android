@@ -14,7 +14,6 @@
 
 package net.openid.appauth;
 
-import static net.openid.appauth.AdditionalParamsProcessor.builtInParams;
 import static net.openid.appauth.AdditionalParamsProcessor.checkAdditionalParams;
 import static net.openid.appauth.Preconditions.checkArgument;
 import static net.openid.appauth.Preconditions.checkNotEmpty;
@@ -27,6 +26,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import net.openid.appauth.internal.Logger;
 import net.openid.appauth.internal.UriUtil;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -34,6 +34,7 @@ import org.json.JSONObject;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -310,22 +311,6 @@ public class AuthorizationRequest implements AuthorizationManagementRequest {
 
     @VisibleForTesting
     static final String PARAM_CLAIMS_LOCALES = "claims_locales";
-
-    private static final Set<String> BUILT_IN_PARAMS = builtInParams(
-            PARAM_CLIENT_ID,
-            PARAM_CODE_CHALLENGE,
-            PARAM_CODE_CHALLENGE_METHOD,
-            PARAM_DISPLAY,
-            PARAM_LOGIN_HINT,
-            PARAM_PROMPT,
-            PARAM_UI_LOCALES,
-            PARAM_REDIRECT_URI,
-            PARAM_RESPONSE_MODE,
-            PARAM_RESPONSE_TYPE,
-            PARAM_SCOPE,
-            PARAM_STATE,
-            PARAM_CLAIMS,
-            PARAM_CLAIMS_LOCALES);
 
     private static final String KEY_CONFIGURATION = "configuration";
     private static final String KEY_CLIENT_ID = "clientId";
@@ -1042,12 +1027,17 @@ public class AuthorizationRequest implements AuthorizationManagementRequest {
          * Specifies additional parameters. Replaces any previously provided set of parameters.
          * Parameter keys and values cannot be null or empty.
          *
+         * <p>Built-in parameters (e.g. {@code response_mode}) are permitted here so that they can
+         * be supplied through a backend-driven configuration map. When a built-in parameter is also
+         * set directly on the builder, the builder value takes precedence and the additional
+         * parameter is dropped when the request URI is produced; see {@link #toUri()}.
+         *
          * @see "The OAuth 2.0 Authorization Framework (RFC 6749), Section 3.1
          * <https://tools.ietf.org/html/rfc6749#section-3.1>"
          */
         @NonNull
         public Builder setAdditionalParameters(@Nullable Map<String, String> additionalParameters) {
-            mAdditionalParameters = checkAdditionalParams(additionalParameters, BUILT_IN_PARAMS);
+            mAdditionalParameters = checkAdditionalParams(additionalParameters);
             return this;
         }
 
@@ -1198,7 +1188,17 @@ public class AuthorizationRequest implements AuthorizationManagementRequest {
         UriUtil.appendQueryParameterIfNotNull(uriBuilder, PARAM_CLAIMS, claims);
         UriUtil.appendQueryParameterIfNotNull(uriBuilder, PARAM_CLAIMS_LOCALES, claimsLocales);
 
+        // Collect the parameters already emitted from the builder fields above; a built-in
+        // parameter supplied via additionalParameters must not overwrite the builder value, and
+        // appending it again would produce a duplicate query parameter rejected by most servers.
+        Set<String> builderParams = new HashSet<>(uriBuilder.build().getQueryParameterNames());
+
         for (Entry<String, String> entry : additionalParameters.entrySet()) {
+            if (builderParams.contains(entry.getKey())) {
+                Logger.warn("Ignoring additional parameter %s; it is already set on the request "
+                        + "and the builder value takes precedence", entry.getKey());
+                continue;
+            }
             uriBuilder.appendQueryParameter(entry.getKey(), entry.getValue());
         }
 

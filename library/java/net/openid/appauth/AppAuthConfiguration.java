@@ -42,13 +42,17 @@ public class AppAuthConfiguration {
 
     private final boolean mSkipIssuerHttpsCheck;
 
+    private final boolean mSkipAudienceAndNonceValidation;
+
     private AppAuthConfiguration(
             @NonNull BrowserMatcher browserMatcher,
             @NonNull ConnectionBuilder connectionBuilder,
-            Boolean skipIssuerHttpsCheck) {
+            Boolean skipIssuerHttpsCheck,
+            Boolean skipAudienceAndNonceValidation) {
         mBrowserMatcher = browserMatcher;
         mConnectionBuilder = connectionBuilder;
         mSkipIssuerHttpsCheck = skipIssuerHttpsCheck;
+        mSkipAudienceAndNonceValidation = skipAudienceAndNonceValidation;
     }
 
     /**
@@ -77,6 +81,14 @@ public class AppAuthConfiguration {
     public boolean getSkipIssuerHttpsCheck() { return mSkipIssuerHttpsCheck; }
 
     /**
+     * Returns <code>true</code> if ID token audience and nonce validation is disabled, otherwise
+     * <code>false</code>.
+     *
+     * @see Builder#setSkipAudienceAndNonceValidation(Boolean)
+     */
+    public boolean getSkipAudienceAndNonceValidation() { return mSkipAudienceAndNonceValidation; }
+
+    /**
      * Creates {@link AppAuthConfiguration} instances.
      */
     public static class Builder {
@@ -84,7 +96,7 @@ public class AppAuthConfiguration {
         private BrowserMatcher mBrowserMatcher = AnyBrowserMatcher.INSTANCE;
         private ConnectionBuilder mConnectionBuilder = DefaultConnectionBuilder.INSTANCE;
         private boolean mSkipIssuerHttpsCheck;
-        private boolean mSkipNonceVerification;
+        private boolean mSkipAudienceAndNonceValidation;
 
         /**
          * Specify the browser matcher to use, which controls the browsers that can be used
@@ -120,6 +132,21 @@ public class AppAuthConfiguration {
         }
 
         /**
+         * Disables the audience/azp (rule #3) and nonce (rule #11) checks performed when
+         * validating the ID token returned as part of a token response. The issuer, expiry and
+         * issued-at checks remain enforced.
+         *
+         * <p>WARNING: Skipping the audience and nonce checks (OpenID Connect Core Section 3.1.3.7
+         * rules #3 and #11) defeats protections against token substitution and replay attacks.
+         * Only enable this option for non-standard providers you control and trust, or for
+         * testing purposes.
+         */
+        public Builder setSkipAudienceAndNonceValidation(Boolean skipAudienceAndNonceValidation) {
+            mSkipAudienceAndNonceValidation = skipAudienceAndNonceValidation;
+            return this;
+        }
+
+        /**
          * Creates the instance from the configured properties.
          */
         @NonNull
@@ -127,7 +154,8 @@ public class AppAuthConfiguration {
             return new AppAuthConfiguration(
                 mBrowserMatcher,
                 mConnectionBuilder,
-                mSkipIssuerHttpsCheck
+                mSkipIssuerHttpsCheck,
+                mSkipAudienceAndNonceValidation
             );
         }
 

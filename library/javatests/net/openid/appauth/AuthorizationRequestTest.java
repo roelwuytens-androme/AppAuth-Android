@@ -665,11 +665,30 @@ public class AuthorizationRequestTest {
 
     /* ******************************* additionalParams *******************************************/
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testBuilder_setAdditionalParams_withBuiltInParam() {
+        // A built-in parameter that is not set on the builder is accepted and flows through to the
+        // request URI, allowing it to be supplied via a backend-driven configuration map.
         Map<String, String> additionalParams = new HashMap<>();
-        additionalParams.put(AuthorizationRequest.PARAM_SCOPE, AuthorizationRequest.Scope.EMAIL);
-        mRequestBuilder.setAdditionalParameters(additionalParams);
+        additionalParams.put(AuthorizationRequest.PARAM_RESPONSE_MODE, "query");
+        Uri uri = mRequestBuilder.setAdditionalParameters(additionalParams).build().toUri();
+        assertThat(uri.getQueryParameter(AuthorizationRequest.PARAM_RESPONSE_MODE))
+                .isEqualTo("query");
+    }
+
+    @Test
+    public void testToUri_additionalParams_builtInParamSetOnBuilderTakesPrecedence() {
+        // When a built-in parameter is set on the builder and also supplied via additional
+        // parameters, the builder value wins and the parameter is emitted exactly once.
+        Map<String, String> additionalParams = new HashMap<>();
+        additionalParams.put(AuthorizationRequest.PARAM_SCOPE, AuthorizationRequest.Scope.PROFILE);
+        Uri uri = mRequestBuilder
+                .setScope(AuthorizationRequest.Scope.EMAIL)
+                .setAdditionalParameters(additionalParams)
+                .build()
+                .toUri();
+        assertThat(uri.getQueryParameters(AuthorizationRequest.PARAM_SCOPE))
+                .containsExactly(AuthorizationRequest.Scope.EMAIL);
     }
 
     /* ******************************* toUri() ****************************************************/

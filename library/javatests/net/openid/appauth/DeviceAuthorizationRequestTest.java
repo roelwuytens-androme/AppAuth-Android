@@ -122,11 +122,20 @@ public class DeviceAuthorizationRequestTest {
 
     /* ******************************* additionalParams *******************************************/
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testBuilder_setAdditionalParams_withBuiltInParam() {
+    @Test
+    public void testGetRequestParameters_builtInParamSetOnBuilderTakesPrecedence() {
+        // When a built-in parameter is set on the builder and also supplied via additional
+        // parameters, the builder value takes precedence.
         Map<String, String> additionalParams = new HashMap<>();
-        additionalParams.put(AuthorizationRequest.PARAM_SCOPE, AuthorizationRequest.Scope.EMAIL);
-        mRequestBuilder.setAdditionalParameters(additionalParams);
+        additionalParams.put(DeviceAuthorizationRequest.PARAM_SCOPE,
+                AuthorizationRequest.Scope.PROFILE);
+        Map<String, String> requestParams = mRequestBuilder
+                .setScope(AuthorizationRequest.Scope.EMAIL)
+                .setAdditionalParameters(additionalParams)
+                .build()
+                .getRequestParameters();
+        assertThat(requestParams.get(DeviceAuthorizationRequest.PARAM_SCOPE))
+                .isEqualTo(AuthorizationRequest.Scope.EMAIL);
     }
 
     /* ************************** jsonSerialize() / jsonDeserialize() *****************************/

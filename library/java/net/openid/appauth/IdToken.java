@@ -24,6 +24,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import net.openid.appauth.AuthorizationException.GeneralErrors;
+import net.openid.appauth.internal.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -210,6 +211,17 @@ public class IdToken {
     void validate(@NonNull TokenRequest tokenRequest,
                   Clock clock,
                   boolean skipIssuerHttpsCheck) throws AuthorizationException {
+        validate(tokenRequest, clock, skipIssuerHttpsCheck, false);
+    }
+
+    void validate(@NonNull TokenRequest tokenRequest,
+                  Clock clock,
+                  boolean skipIssuerHttpsCheck,
+                  boolean skipAudienceAndNonceValidation) throws AuthorizationException {
+        if (skipAudienceAndNonceValidation) {
+            Logger.warn("ID token audience and nonce validation skipped");
+        }
+
         // OpenID Connect Core Section 3.1.3.7. rule #1
         // Not enforced: AppAuth does not support JWT encryption.
 
@@ -250,10 +262,12 @@ public class IdToken {
         // OpenID Connect Core Section 3.1.3.7. rule #3 & Section 2 azp Claim
         // Validates that the aud (audience) Claim contains the client ID, or that the azp
         // (authorized party) Claim matches the client ID.
-        String clientId = tokenRequest.clientId;
-        if (!this.audience.contains(clientId) && !clientId.equals(this.authorizedParty)) {
-            throw AuthorizationException.fromTemplate(GeneralErrors.ID_TOKEN_VALIDATION_ERROR,
-                new IdTokenException("Audience mismatch"));
+        if (!skipAudienceAndNonceValidation) {
+            String clientId = tokenRequest.clientId;
+            if (!this.audience.contains(clientId) && !clientId.equals(this.authorizedParty)) {
+                throw AuthorizationException.fromTemplate(GeneralErrors.ID_TOKEN_VALIDATION_ERROR,
+                    new IdTokenException("Audience mismatch"));
+            }
         }
 
         // OpenID Connect Core Section 3.1.3.7. rules #4 & #5
@@ -286,7 +300,8 @@ public class IdToken {
         }
 
         // Only relevant for the authorization_code response type
-        if (GrantTypeValues.AUTHORIZATION_CODE.equals(tokenRequest.grantType)) {
+        if (!skipAudienceAndNonceValidation
+                && GrantTypeValues.AUTHORIZATION_CODE.equals(tokenRequest.grantType)) {
             // OpenID Connect Core Section 3.1.3.7. rule #11
             // Validates the nonce.
             String expectedNonce = tokenRequest.nonce;
