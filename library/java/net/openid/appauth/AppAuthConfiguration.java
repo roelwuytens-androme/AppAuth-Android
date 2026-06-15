@@ -42,13 +42,17 @@ public class AppAuthConfiguration {
 
     private final boolean mSkipIssuerHttpsCheck;
 
+    private final boolean mSkipIdTokenValidation;
+
     private AppAuthConfiguration(
             @NonNull BrowserMatcher browserMatcher,
             @NonNull ConnectionBuilder connectionBuilder,
-            Boolean skipIssuerHttpsCheck) {
+            Boolean skipIssuerHttpsCheck,
+            Boolean skipIdTokenValidation) {
         mBrowserMatcher = browserMatcher;
         mConnectionBuilder = connectionBuilder;
         mSkipIssuerHttpsCheck = skipIssuerHttpsCheck;
+        mSkipIdTokenValidation = skipIdTokenValidation;
     }
 
     /**
@@ -77,6 +81,14 @@ public class AppAuthConfiguration {
     public boolean getSkipIssuerHttpsCheck() { return mSkipIssuerHttpsCheck; }
 
     /**
+     * Returns <code>true</code> if ID token validation is disabled, otherwise
+     * <code>false</code>.
+     *
+     * @see Builder#setSkipIdTokenValidation(Boolean)
+     */
+    public boolean getSkipIdTokenValidation() { return mSkipIdTokenValidation; }
+
+    /**
      * Creates {@link AppAuthConfiguration} instances.
      */
     public static class Builder {
@@ -84,6 +96,7 @@ public class AppAuthConfiguration {
         private BrowserMatcher mBrowserMatcher = AnyBrowserMatcher.INSTANCE;
         private ConnectionBuilder mConnectionBuilder = DefaultConnectionBuilder.INSTANCE;
         private boolean mSkipIssuerHttpsCheck;
+        private boolean mSkipIdTokenValidation;
         private boolean mSkipNonceVerification;
 
         /**
@@ -120,6 +133,19 @@ public class AppAuthConfiguration {
         }
 
         /**
+         * Disables validation of the ID token returned as part of a token response.
+         *
+         * <p>WARNING: Disabling ID token validation removes the issuer, audience, expiry and
+         * nonce checks defined by OpenID Connect Core Section 3.1.3.7. This defeats protections
+         * against token substitution and replay attacks. Only enable this option for
+         * non-standard providers you control and trust, or for testing purposes.
+         */
+        public Builder setSkipIdTokenValidation(Boolean skipIdTokenValidation) {
+            mSkipIdTokenValidation = skipIdTokenValidation;
+            return this;
+        }
+
+        /**
          * Creates the instance from the configured properties.
          */
         @NonNull
@@ -127,7 +153,8 @@ public class AppAuthConfiguration {
             return new AppAuthConfiguration(
                 mBrowserMatcher,
                 mConnectionBuilder,
-                mSkipIssuerHttpsCheck
+                mSkipIssuerHttpsCheck,
+                mSkipIdTokenValidation
             );
         }
 

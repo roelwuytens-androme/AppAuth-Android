@@ -24,6 +24,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import net.openid.appauth.AuthorizationException.GeneralErrors;
+import net.openid.appauth.internal.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -210,6 +211,19 @@ public class IdToken {
     void validate(@NonNull TokenRequest tokenRequest,
                   Clock clock,
                   boolean skipIssuerHttpsCheck) throws AuthorizationException {
+        validate(tokenRequest, clock, skipIssuerHttpsCheck, false);
+    }
+
+    void validate(@NonNull TokenRequest tokenRequest,
+                  Clock clock,
+                  boolean skipIssuerHttpsCheck,
+                  boolean skipValidation) throws AuthorizationException {
+        // Validation is disabled via AppAuthConfiguration; accept the ID token as-is.
+        if (skipValidation) {
+            Logger.warn("ID token validation skipped");
+            return;
+        }
+
         // OpenID Connect Core Section 3.1.3.7. rule #1
         // Not enforced: AppAuth does not support JWT encryption.
 

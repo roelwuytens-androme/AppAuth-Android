@@ -526,7 +526,8 @@ public class AuthorizationService {
                 mClientConfiguration.getConnectionBuilder(),
                 SystemClock.INSTANCE,
                 callback,
-                mClientConfiguration.getSkipIssuerHttpsCheck())
+                mClientConfiguration.getSkipIssuerHttpsCheck(),
+                mClientConfiguration.getSkipIdTokenValidation())
                 .execute();
     }
 
@@ -574,7 +575,8 @@ public class AuthorizationService {
                 mClientConfiguration.getConnectionBuilder(),
                 SystemClock.INSTANCE,
                 callback,
-                mClientConfiguration.getSkipIssuerHttpsCheck());
+                mClientConfiguration.getSkipIssuerHttpsCheck(),
+                mClientConfiguration.getSkipIdTokenValidation());
         CancelAsyncTaskRunnable cancelPollingTask = new CancelAsyncTaskRunnable(
                 pollingTask);
         pollingTask.execute();
@@ -670,9 +672,10 @@ public class AuthorizationService {
                                 @NonNull ConnectionBuilder connectionBuilder,
                                 Clock clock,
                                 TokenResponseCallback callback,
-                                Boolean skipIssuerHttpsCheck) {
+                                Boolean skipIssuerHttpsCheck,
+                                Boolean skipIdTokenValidation) {
             super(request, clientAuthentication, connectionBuilder, clock, callback,
-                    skipIssuerHttpsCheck);
+                    skipIssuerHttpsCheck, skipIdTokenValidation);
             mPollingInterval = TimeUnit.SECONDS.toMillis(
                     pollingInterval != null ? pollingInterval : DEFAULT_INTERVAL);
             mExpirationTime = expirationTime;
@@ -746,6 +749,7 @@ public class AuthorizationService {
         private TokenResponseCallback mCallback;
         private Clock mClock;
         private boolean mSkipIssuerHttpsCheck;
+        private boolean mSkipIdTokenValidation;
 
         protected AuthorizationException mException;
 
@@ -754,13 +758,15 @@ public class AuthorizationService {
                          @NonNull ConnectionBuilder connectionBuilder,
                          Clock clock,
                          TokenResponseCallback callback,
-                         Boolean skipIssuerHttpsCheck) {
+                         Boolean skipIssuerHttpsCheck,
+                         Boolean skipIdTokenValidation) {
             mRequest = request;
             mClientAuthentication = clientAuthentication;
             mConnectionBuilder = connectionBuilder;
             mClock = clock;
             mCallback = callback;
             mSkipIssuerHttpsCheck = skipIssuerHttpsCheck;
+            mSkipIdTokenValidation = skipIdTokenValidation;
         }
 
         @Override
@@ -874,7 +880,8 @@ public class AuthorizationService {
                     idToken.validate(
                             mRequest,
                             mClock,
-                            mSkipIssuerHttpsCheck
+                            mSkipIssuerHttpsCheck,
+                            mSkipIdTokenValidation
                     );
                 } catch (AuthorizationException ex) {
                     mCallback.onTokenRequestCompleted(null, ex);
