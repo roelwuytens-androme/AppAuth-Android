@@ -97,7 +97,6 @@ public class AppAuthConfiguration {
         private ConnectionBuilder mConnectionBuilder = DefaultConnectionBuilder.INSTANCE;
         private boolean mSkipIssuerHttpsCheck;
         private boolean mSkipIdTokenValidation;
-        private boolean mSkipNonceVerification;
 
         /**
          * Specify the browser matcher to use, which controls the browsers that can be used
