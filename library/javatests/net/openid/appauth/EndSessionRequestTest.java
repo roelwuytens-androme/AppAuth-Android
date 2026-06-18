@@ -76,6 +76,36 @@ public class EndSessionRequestTest {
         assertThat(request.postLogoutRedirectUri).isEqualTo(TEST_APP_REDIRECT_URI);
     }
 
+    @Test
+    public void testPostLogoutRedirectUriParameterName_defaultsToSpecName() {
+        EndSessionRequest request = mRequestBuilder.build();
+        assertThat(request.postLogoutRedirectUriParameterName)
+            .isEqualTo(EndSessionRequest.PARAM_POST_LOGOUT_REDIRECT_URI);
+    }
+
+    @Test
+    public void testPostLogoutRedirectUriParameterName_custom() {
+        EndSessionRequest request = mRequestBuilder
+            .setPostLogoutRedirectUriParameterName("redirect_uri")
+            .build();
+        assertThat(request.postLogoutRedirectUriParameterName).isEqualTo("redirect_uri");
+    }
+
+    @Test
+    public void testPostLogoutRedirectUriParameterName_nullResetsToDefault() {
+        EndSessionRequest request = mRequestBuilder
+            .setPostLogoutRedirectUriParameterName("redirect_uri")
+            .setPostLogoutRedirectUriParameterName(null)
+            .build();
+        assertThat(request.postLogoutRedirectUriParameterName)
+            .isEqualTo(EndSessionRequest.PARAM_POST_LOGOUT_REDIRECT_URI);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testPostLogoutRedirectUriParameterName_empty() {
+        mRequestBuilder.setPostLogoutRedirectUriParameterName("").build();
+    }
+
     /* *********************************** state **************************************************/
 
     @Test
@@ -218,6 +248,31 @@ public class EndSessionRequestTest {
     }
 
     @Test
+    public void testToUri_customPostLogoutRedirectUriParameterName() {
+        EndSessionRequest request = mRequestBuilder
+            .setPostLogoutRedirectUri(TEST_APP_REDIRECT_URI)
+            .setPostLogoutRedirectUriParameterName("redirect_uri")
+            .build();
+        Uri uri = request.toUri();
+
+        assertThat(uri.getQueryParameter("redirect_uri"))
+            .isEqualTo(TEST_APP_REDIRECT_URI.toString());
+        assertThat(uri.getQueryParameterNames())
+            .doesNotContain(EndSessionRequest.PARAM_POST_LOGOUT_REDIRECT_URI);
+    }
+
+    @Test
+    public void testToUri_defaultPostLogoutRedirectUriParameterName() {
+        EndSessionRequest request = mRequestBuilder
+            .setPostLogoutRedirectUri(TEST_APP_REDIRECT_URI)
+            .build();
+        Uri uri = request.toUri();
+
+        assertThat(uri.getQueryParameter(EndSessionRequest.PARAM_POST_LOGOUT_REDIRECT_URI))
+            .isEqualTo(TEST_APP_REDIRECT_URI.toString());
+    }
+
+    @Test
     public void testToUri_noState() throws Exception {
         EndSessionRequest req = mRequestBuilder.setState(null).build();
         assertThat(req.toUri().getQueryParameterNames())
@@ -261,6 +316,23 @@ public class EndSessionRequestTest {
         assertThat(copy.idTokenHint).isEqualTo(TEST_ID_TOKEN);
         assertThat(copy.state).isEqualTo(request.state);
         assertThat(copy.postLogoutRedirectUri).isEqualTo(request.postLogoutRedirectUri);
+    }
+
+    @Test
+    public void testJsonSerialize_postLogoutRedirectUriParameterName() throws Exception {
+        EndSessionRequest copy = serializeDeserialize(
+            mRequestBuilder.setPostLogoutRedirectUriParameterName("redirect_uri").build());
+        assertThat(copy.postLogoutRedirectUriParameterName).isEqualTo("redirect_uri");
+    }
+
+    @Test
+    public void testJsonDeserialize_postLogoutRedirectUriParameterName_defaultsWhenAbsent()
+            throws Exception {
+        JSONObject json = mRequestBuilder.build().jsonSerialize();
+        json.remove("post_logout_redirect_uri_param_name");
+        EndSessionRequest copy = EndSessionRequest.jsonDeserialize(json);
+        assertThat(copy.postLogoutRedirectUriParameterName)
+            .isEqualTo(EndSessionRequest.PARAM_POST_LOGOUT_REDIRECT_URI);
     }
 
     @Test

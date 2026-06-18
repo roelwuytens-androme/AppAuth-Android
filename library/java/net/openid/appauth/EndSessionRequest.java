@@ -63,6 +63,8 @@ public class EndSessionRequest implements AuthorizationManagementRequest {
     private static final String KEY_CONFIGURATION = "configuration";
     private static final String KEY_ID_TOKEN_HINT = "id_token_hint";
     private static final String KEY_POST_LOGOUT_REDIRECT_URI = "post_logout_redirect_uri";
+    private static final String KEY_POST_LOGOUT_REDIRECT_URI_PARAM_NAME =
+            "post_logout_redirect_uri_param_name";
     private static final String KEY_STATE = "state";
     private static final String KEY_UI_LOCALES = "ui_locales";
     private static final String KEY_ADDITIONAL_PARAMETERS = "additionalParameters";
@@ -100,6 +102,17 @@ public class EndSessionRequest implements AuthorizationManagementRequest {
      */
     @Nullable
     public final Uri postLogoutRedirectUri;
+
+    /**
+     * The query parameter name used to convey the {@link #postLogoutRedirectUri}. Defaults to
+     * {@code post_logout_redirect_uri} as defined by the spec, but can be overridden for
+     * non-standard providers that expect a different name (e.g. {@code redirect_uri}).
+     *
+     * @see "OpenID Connect RP-Initiated Logout 1.0 - draft 1, 3.  Redirection to RP After Logout
+     * <https://openid.net/specs/openid-connect-rpinitiated-1_0.html#RedirectionAfterLogout>"
+     */
+    @NonNull
+    public final String postLogoutRedirectUriParameterName;
 
     /**
      * An opaque value used by the client to maintain state between the request and callback. If
@@ -149,6 +162,9 @@ public class EndSessionRequest implements AuthorizationManagementRequest {
         @Nullable
         private Uri mPostLogoutRedirectUri;
 
+        @NonNull
+        private String mPostLogoutRedirectUriParameterName = PARAM_POST_LOGOUT_REDIRECT_URI;
+
         @Nullable
         private String mState;
 
@@ -186,6 +202,18 @@ public class EndSessionRequest implements AuthorizationManagementRequest {
         @NonNull
         public Builder setPostLogoutRedirectUri(@Nullable Uri postLogoutRedirectUri) {
             mPostLogoutRedirectUri = postLogoutRedirectUri;
+            return this;
+        }
+
+        /** @see EndSessionRequest#postLogoutRedirectUriParameterName */
+        @NonNull
+        public Builder setPostLogoutRedirectUriParameterName(
+                @Nullable String postLogoutRedirectUriParameterName) {
+            checkNullOrNotEmpty(postLogoutRedirectUriParameterName,
+                    "postLogoutRedirectUriParameterName must be null or not empty");
+            mPostLogoutRedirectUriParameterName = postLogoutRedirectUriParameterName != null
+                    ? postLogoutRedirectUriParameterName
+                    : PARAM_POST_LOGOUT_REDIRECT_URI;
             return this;
         }
 
@@ -239,6 +267,7 @@ public class EndSessionRequest implements AuthorizationManagementRequest {
                 mConfiguration,
                 mIdTokenHint,
                 mPostLogoutRedirectUri,
+                mPostLogoutRedirectUriParameterName,
                 mState,
                 mUiLocales,
                 Collections.unmodifiableMap(new HashMap<>(mAdditionalParameters)));
@@ -249,12 +278,14 @@ public class EndSessionRequest implements AuthorizationManagementRequest {
             @NonNull AuthorizationServiceConfiguration configuration,
             @Nullable String idTokenHint,
             @Nullable Uri postLogoutRedirectUri,
+            @NonNull String postLogoutRedirectUriParameterName,
             @Nullable String state,
             @Nullable String uiLocales,
             @NonNull Map<String, String> additionalParameters) {
         this.configuration = configuration;
         this.idTokenHint = idTokenHint;
         this.postLogoutRedirectUri = postLogoutRedirectUri;
+        this.postLogoutRedirectUriParameterName = postLogoutRedirectUriParameterName;
         this.state = state;
         this.uiLocales = uiLocales;
         this.additionalParameters = additionalParameters;
@@ -279,7 +310,7 @@ public class EndSessionRequest implements AuthorizationManagementRequest {
         UriUtil.appendQueryParameterIfNotNull(uriBuilder, PARAM_UI_LOCALES, uiLocales);
 
         if (postLogoutRedirectUri != null) {
-            uriBuilder.appendQueryParameter(PARAM_POST_LOGOUT_REDIRECT_URI,
+            uriBuilder.appendQueryParameter(postLogoutRedirectUriParameterName,
                     postLogoutRedirectUri.toString());
         }
 
@@ -300,6 +331,8 @@ public class EndSessionRequest implements AuthorizationManagementRequest {
         JsonUtil.put(json, KEY_CONFIGURATION, configuration.toJson());
         JsonUtil.putIfNotNull(json, KEY_ID_TOKEN_HINT, idTokenHint);
         JsonUtil.putIfNotNull(json, KEY_POST_LOGOUT_REDIRECT_URI, postLogoutRedirectUri);
+        JsonUtil.put(json, KEY_POST_LOGOUT_REDIRECT_URI_PARAM_NAME,
+                postLogoutRedirectUriParameterName);
         JsonUtil.putIfNotNull(json, KEY_STATE, state);
         JsonUtil.putIfNotNull(json, KEY_UI_LOCALES, uiLocales);
         JsonUtil.put(json, KEY_ADDITIONAL_PARAMETERS,
@@ -325,10 +358,16 @@ public class EndSessionRequest implements AuthorizationManagementRequest {
     public static EndSessionRequest jsonDeserialize(@NonNull JSONObject json)
             throws JSONException {
         checkNotNull(json, "json cannot be null");
+        String postLogoutRedirectUriParameterName =
+                JsonUtil.getStringIfDefined(json, KEY_POST_LOGOUT_REDIRECT_URI_PARAM_NAME);
+        if (postLogoutRedirectUriParameterName == null) {
+            postLogoutRedirectUriParameterName = PARAM_POST_LOGOUT_REDIRECT_URI;
+        }
         return new EndSessionRequest(
                 AuthorizationServiceConfiguration.fromJson(json.getJSONObject(KEY_CONFIGURATION)),
                 JsonUtil.getStringIfDefined(json, KEY_ID_TOKEN_HINT),
                 JsonUtil.getUriIfDefined(json, KEY_POST_LOGOUT_REDIRECT_URI),
+                postLogoutRedirectUriParameterName,
                 JsonUtil.getStringIfDefined(json, KEY_STATE),
                 JsonUtil.getStringIfDefined(json, KEY_UI_LOCALES),
                 JsonUtil.getStringMap(json, KEY_ADDITIONAL_PARAMETERS));
