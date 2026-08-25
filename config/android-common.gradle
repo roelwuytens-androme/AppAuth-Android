@@ -1,3 +1,30 @@
+import org.gradle.api.attributes.Attribute
+import org.gradle.api.attributes.AttributeCompatibilityRule
+import org.gradle.api.attributes.CompatibilityCheckDetails
+
+// AGP tags Android resolvable classpaths with kotlin platform.type=androidJvm so they can
+// consume Kotlin-Multiplatform artifacts. The rule that makes a producer 'jvm' variant
+// acceptable to an 'androidJvm' consumer normally ships with the Kotlin Gradle plugin,
+// which this (deliberately pure-Java) project does not apply. Without it, KMP artifacts
+// that publish only jvm/native variants -- androidx.annotation >= 1.8.0 and its transitive
+// kotlin-stdlib -- fail to resolve ("No matching variant"). Register the rule manually.
+abstract class KotlinPlatformTypeCompat implements AttributeCompatibilityRule<String> {
+    @Override
+    void execute(CompatibilityCheckDetails<String> details) {
+        if (details.consumerValue == 'androidJvm' && details.producerValue == 'jvm') {
+            details.compatible()
+        }
+    }
+}
+
+dependencies {
+    attributesSchema {
+        attribute(Attribute.of('org.jetbrains.kotlin.platform.type', String)) {
+            compatibilityRules.add(KotlinPlatformTypeCompat)
+        }
+    }
+}
+
 android {
     namespace 'net.openid.appauth'
     compileSdkVersion rootProject.compileSdkVersion
