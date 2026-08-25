@@ -27,7 +27,7 @@ import org.robolectric.annotation.Config;
 
 
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk = 16)
+@Config(sdk = 23)
 public class ClientSecretBasicTest {
     @Test
     public void testGetRequestHeaders() {

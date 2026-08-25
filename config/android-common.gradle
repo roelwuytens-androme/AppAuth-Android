@@ -1,6 +1,8 @@
 import org.gradle.api.attributes.Attribute
 import org.gradle.api.attributes.AttributeCompatibilityRule
+import org.gradle.api.attributes.AttributeDisambiguationRule
 import org.gradle.api.attributes.CompatibilityCheckDetails
+import org.gradle.api.attributes.MultipleCandidatesDetails
 
 // AGP tags Android resolvable classpaths with kotlin platform.type=androidJvm so they can
 // consume Kotlin-Multiplatform artifacts. The rule that makes a producer 'jvm' variant
@@ -17,10 +19,30 @@ abstract class KotlinPlatformTypeCompat implements AttributeCompatibilityRule<St
     }
 }
 
+// The compatibility rule above only widens what is acceptable; it does not say what is best.
+// Without a disambiguation rule a library publishing both androidJvm and jvm variants can be
+// resolved to its plain-JVM variant, silently dropping Android-only classes, manifest entries
+// and consumer ProGuard rules. Always prefer an exact match, then androidJvm, then jvm.
+abstract class KotlinPlatformTypePreferAndroid implements AttributeDisambiguationRule<String> {
+    @Override
+    void execute(MultipleCandidatesDetails<String> details) {
+        Set<String> candidates = details.candidateValues
+        String consumerValue = details.consumerValue
+        if (consumerValue != null && candidates.contains(consumerValue)) {
+            details.closestMatch(consumerValue)
+        } else if (candidates.contains('androidJvm')) {
+            details.closestMatch('androidJvm')
+        } else if (candidates.contains('jvm')) {
+            details.closestMatch('jvm')
+        }
+    }
+}
+
 dependencies {
     attributesSchema {
         attribute(Attribute.of('org.jetbrains.kotlin.platform.type', String)) {
             compatibilityRules.add(KotlinPlatformTypeCompat)
+            disambiguationRules.add(KotlinPlatformTypePreferAndroid)
         }
     }
 }
@@ -50,7 +72,11 @@ android {
     }
     lintOptions {
         warningsAsErrors true
-        disable 'InvalidPackage', 'TrulyRandom', 'UseCompoundDrawables', 'GradleDependency'
+        // ObsoleteSdkInt / UseRequiresApi: upstream still targets minSdk 16, so its SDK_INT
+        // guards and @TargetApi annotations are dead code at our minSdk but must stay for
+        // upstream mergeability.
+        disable 'InvalidPackage', 'TrulyRandom', 'UseCompoundDrawables', 'GradleDependency',
+                'ObsoleteSdkInt', 'UseRequiresApi'
     }
     packagingOptions {
         exclude 'META-INF/LICENSE.txt'

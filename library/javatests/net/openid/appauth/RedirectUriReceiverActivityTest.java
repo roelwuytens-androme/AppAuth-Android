@@ -28,7 +28,7 @@ import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk = 16)
+@Config(sdk = 23)
 public class RedirectUriReceiverActivityTest {
 
     @Test

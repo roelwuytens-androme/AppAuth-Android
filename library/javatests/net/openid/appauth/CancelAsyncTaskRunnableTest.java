@@ -30,7 +30,7 @@ import org.robolectric.shadows.ShadowPausedAsyncTask;
 
 @SuppressWarnings({"deprecation", "UnstableApiUsage"})
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk = 16)
+@Config(sdk = 23)
 public class CancelAsyncTaskRunnableTest
 {
     private PausedExecutorService mPausedExecutorService;

@@ -50,7 +50,7 @@ import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadows.ShadowPausedAsyncTask;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk = 16)
+@Config(sdk = 23)
 @LooperMode(LooperMode.Mode.PAUSED)
 public class AuthorizationServiceConfigurationTest {
     private static final int CALLBACK_TIMEOUT_MILLIS = 1000;

@@ -49,7 +49,7 @@ import static org.junit.Assert.assertEquals;
 
 
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk=16)
+@Config(sdk=23)
 public class IdTokenTest {
 
     static final String TEST_SUBJECT = "SUBJ3CT";

@@ -37,7 +37,7 @@ import org.robolectric.annotation.Config;
 import java.util.Collections;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk = 16)
+@Config(sdk = 23)
 public class DeviceAuthorizationResponseTest {
 
     // the test is asserted to be running at time 23

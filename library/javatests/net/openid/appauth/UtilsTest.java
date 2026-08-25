@@ -28,7 +28,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk = 16)
+@Config(sdk = 23)
 public class UtilsTest {
 
     private static final String TEST_STRING = "test_string\nwith a new line";

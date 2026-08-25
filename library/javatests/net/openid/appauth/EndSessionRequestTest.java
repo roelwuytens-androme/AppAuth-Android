@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk = 16)
+@Config(sdk = 23)
 public class EndSessionRequestTest {
 
     private EndSessionRequest.Builder mRequestBuilder;

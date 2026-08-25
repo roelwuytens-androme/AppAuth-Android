@@ -41,7 +41,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
 @RunWith(Enclosed.class)
-@Config(sdk=16)
+@Config(sdk=23)
 public class RegistrationResponseTest {
     private static final Long TEST_CLIENT_ID_ISSUED_AT = 34L;
     private static final String TEST_REGISTRATION_ACCESS_TOKEN = "test_access_token";
@@ -61,7 +61,7 @@ public class RegistrationResponseTest {
             + "}";
 
     @RunWith(RobolectricTestRunner.class)
-    @Config(sdk=16)
+    @Config(sdk=23)
     public static class RegistrationResponseSingleTest {
         private RegistrationResponse.Builder mMinimalBuilder;
         private JSONObject mJson;
@@ -171,7 +171,7 @@ public class RegistrationResponseTest {
     }
 
     @RunWith(ParameterizedRobolectricTestRunner.class)
-    @Config(sdk=16)
+    @Config(sdk=23)
     public static class RegistrationResponseParameterTest {
         private JSONObject mJson;
         private RegistrationRequest mMinimalRegistrationRequest;
