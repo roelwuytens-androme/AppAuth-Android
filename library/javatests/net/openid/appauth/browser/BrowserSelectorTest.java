@@ -47,7 +47,7 @@ import org.robolectric.annotation.Config;
 
 
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk = 16)
+@Config(sdk = 23)
 public class BrowserSelectorTest {
 
     private static final String SCHEME_HTTP = "http";
@@ -321,7 +321,7 @@ public class BrowserSelectorTest {
 
         when(mPackageManager.queryIntentActivities(
                 BROWSER_INTENT,
-                PackageManager.GET_RESOLVED_FILTER))
+                PackageManager.GET_RESOLVED_FILTER | PackageManager.MATCH_ALL))
                 .thenReturn(resolveInfos);
     }
 

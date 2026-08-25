@@ -53,7 +53,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk=16)
+@Config(sdk=23)
 public class AuthStateTest {
 
     private static final Long ONE_SECOND = 1000L;

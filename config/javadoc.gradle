@@ -9,7 +9,10 @@ dependencies {
 task androidJavadoc(type: JavaExec) {
     jvmArgs = ['--add-exports=jdk.javadoc/jdk.javadoc.internal.tool=ALL-UNNAMED',
                '--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED']
-    classpath files(project.android.getBootClasspath())
+    // AGP 8 no longer populates the deprecated `android.bootClasspath` at configuration time
+    // (it returns an empty list), which silently dropped android.jar from the javadoc classpath
+    // and broke this task. Resolve it lazily from the AndroidComponentsExtension provider.
+    classpath files({ project.extensions.getByName('androidComponents').sdkComponents.bootClasspath.get() })
     mainClass = 'jdk.javadoc.internal.tool.Main'
     ext.destinationDir = file("${project.buildDir}/docs/javadoc")
     args = ['-doctitle', "AppAuth for Android",

@@ -30,7 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk = 16)
+@Config(sdk = 23)
 public class DeviceAuthorizationRequestTest {
 
     private static final Map<String, String> TEST_ADDITIONAL_PARAMS;

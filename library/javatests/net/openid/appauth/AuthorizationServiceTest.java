@@ -107,7 +107,7 @@ import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk = 16)
+@Config(sdk = 23)
 @LooperMode(LooperMode.Mode.PAUSED)
 public class AuthorizationServiceTest {
     private static final int CALLBACK_TIMEOUT_MILLIS = 1000;

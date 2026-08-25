@@ -3,4 +3,7 @@
     <issue id="NotificationPermission">
         <ignore regexp="com.bumptech.glide.request.target.NotificationTarget" />
     </issue>
+    <!-- The https redirect URI demonstrates App Links, but appauth.demo-app.io is a
+         placeholder domain with no assetlinks.json, so autoVerify is deliberately absent. -->
+    <issue id="AppLinkWarning" severity="ignore" />
 </lint>

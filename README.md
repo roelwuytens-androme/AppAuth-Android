@@ -46,9 +46,9 @@ implementation 'net.openid:appauth:<version>'
 
 ## Requirements
 
-AppAuth supports Android API 16 (Jellybean) and above. Browsers which provide a custom tabs
+This fork supports Android API 23 (Marshmallow) and above. Browsers which provide a custom tabs
 implementation are preferred by the library, but not required.
-Both Custom URI Schemes (all supported versions of Android) and App Links (Android M / API 23+) can
+Both Custom URI Schemes and App Links (Android M / API 23+) can
 be used with the library.
 
 In general, AppAuth can work with any Authorization Server (AS) that supports
@@ -846,8 +846,8 @@ authState.performActionWithFreshTokens(
 
 ## Modifying or contributing to AppAuth
 
-This project requires the Android SDK for API level 25 (Nougat) to build,
-though the produced binaries only require API level 16 (Jellybean) to be
+This project requires the Android SDK for API level 36 to build,
+though the produced binaries only require API level 23 (Marshmallow) to be
 used. We recommend that you fork and/or clone this repository to make
 modifications; downloading the source has been known to cause some developers
 problems.
